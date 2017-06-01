@@ -5,14 +5,14 @@
 #variables
 $env = 'int.' #Follow with "." e.g. "int." leave blank for Prod
 $ApplicationName = "atlas"
-$servers = ('') #list all servers requiring install, comma-separated.
+$servers = ('WIN-0G4HO9015HG') #list all servers requiring install, comma-separated.
 $URL = ($ApplicationName+"."+$env+"ert.com")
 
 foreach ($server in $servers) {
     $logpath = "C:\Logs\"
     $logfile = ($logpath+$server+'.txt')
     $createdirs = {
-        mkdir $using:logpath
+        mkdir $using:logpath -force
     }
     Invoke-Command –ComputerName $server –ScriptBlock $createdirs
 
@@ -94,8 +94,7 @@ foreach ($server in $servers) {
             }
 
         #Create websites
-        $binding = (:80:atlas.int.ert.com)
-        New-Item 'iis:\Sites\atlas.int.ert.com' -bindings @{protocol="http";bindingInformation=$binding} -physicalPath C:\inetpub\wwwroot\Atlas -ApplicationPool "AtlasV2"
+        New-Item 'iis:\Sites\atlas.int.ert.com' -bindings @{protocol="http";bindingInformation=":80:atlas.int.ert.com"} -physicalPath C:\inetpub\wwwroot\Atlas -ApplicationPool "AtlasV2"
         New-Item 'IIS:\Sites\atlas.int.ert.com\V2' -type VirtualDirectory -physicalPath C:\inetpub\wwwroot\Atlas\V2
         New-Item 'IIS:\Sites\atlas.int.ert.com\V2\AdministrationAPI' -type Application -physicalpath C:\inetpub\wwwroot\Atlas\V2\AdministrationAPI -ApplicationPool "AtlasV2AdministrationAPI"
         New-Item 'IIS:\Sites\atlas.int.ert.com\V2\Administrator' -type Application -physicalpath C:\inetpub\wwwroot\Atlas\V2\Administrator -ApplicationPool "AtlasV2"
