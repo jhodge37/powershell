@@ -92,9 +92,9 @@ foreach ($server in $servers) {
             New-Item 'IIS:\Sites\atlas.int.ert.com\V2\Administrator' -type Application -physicalpath C:\inetpub\wwwroot\Atlas\V2\Administrator -ApplicationPool "AtlasV2"
             New-Item 'IIS:\Sites\atlas.int.ert.com\V2\MessagingAPI' -type Application -physicalpath C:\inetpub\wwwroot\Atlas\V2\MessagingAPI -ApplicationPool "AtlasV2MessagingAPI"
             New-Item 'IIS:\Sites\atlas.int.ert.com\V2\Webinterface' -type Application -physicalpath C:\inetpub\wwwroot\Atlas\V2\Webinterface -ApplicationPool "AtlasV2"
-            
+
             }
 
         Invoke-Command –ComputerName $server –ScriptBlock $scriptBlock
                             }
-                               }
+                               
