@@ -14,6 +14,10 @@ foreach ($server in $servers) {
     $logfile = ($logpath+$server+'_'+$time+'.txt')
     $createdirs = {
         mkdir $using:logpath -force
+        mkdir C:\inetpub\wwwroot\Atlas\V2\AdministrationAPI -force
+        mkdir C:\inetpub\wwwroot\Atlas\V2\Administrator -force
+        mkdir C:\inetpub\wwwroot\Atlas\V2\MessagingAPI -force
+        mkdir C:\inetpub\wwwroot\Atlas\V2\Webinterface -force
     }
     Invoke-Command –ComputerName $server –ScriptBlock $createdirs
 
