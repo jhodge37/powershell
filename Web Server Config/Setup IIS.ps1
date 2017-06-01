@@ -1,19 +1,24 @@
 #This script creates app pools and websites for the listed applications, across the listed servers
 
+
+
 #Gather variables
 $env = 'int'
 $apps = ('Testapp1','Testapp2','Testapp3')
 $servers = ('WIN-0G4HO9015HG')
 
 foreach ($server in $servers) {
+    #Installs DFS and IIS Roles - Add servers (comma-seperated).
+    Install-WindowsFeature -computername $server –Name FS-DFS-Replication, Web-Server, NET-Framework-Features, Web-Net-Ext, Web-Net-Ext45, Web-Asp-Net, Web-Asp-Net45 -includeManagementTools
     
+    #Scriptblock for creating App pools and Sites, per app.
     foreach ($app in $apps) {
         $scriptBlock = {
             #ImportModules
             Import-Module WebAdministration
           
             #Get App Pool Identity User
-            $cred = Get-credential -Credential $using:app
+            $cred = Get-credential -Credential ('Enter Username for '+$using:app)
             $cleartextpassword = $cred.getnetworkcredential().Password
 
             #Remove the app pool if it already exists       
