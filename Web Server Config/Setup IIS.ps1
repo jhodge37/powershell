@@ -3,44 +3,50 @@
 #Gather variables
 $env = 'int'
 $apps = ('Testapp1','Testapp2','Testapp3')
-$servers = ('c1sgtrvap01','c1dgtrvap01','c1dgtrvap02')
+$servers = ('WIN-0G4HO9015HG')
 
 foreach ($server in $servers) {
+    
     foreach ($app in $apps) {
         $scriptBlock = {
             #ImportModules
             Import-Module WebAdministration
-            
-            #Set log path
-            mkdir C:\Logs -Force
-            $Logfile = ('C:\Logs\'+$app)
-
+          
             #Get App Pool Identity User
-            $cred = Get-credential
+            $cred = Get-credential -Credential $using:app
+            $cleartextpassword = $cred.getnetworkcredential().Password
 
             #Remove the app pool if it already exists       
-            if(Test-Path IIS:\AppPools\$app) {
-                Write-Output "App pool exists - removing" | Out-File $Logfile -Append
-                Remove-WebAppPool $app | Out-File $Logfile -Append
-                Get-ChildItem IIS:\AppPools | Out-File $Logfile -Append
+            if(Test-Path IIS:\AppPools\$using:app) {
+               Write-Output "App pool exists - removing"
+              Remove-WebAppPool $using:app
+             Get-ChildItem IIS:\AppPools
             }
             
             #Create the app pool
-            New-WebAppPool -Name $app | Out-File $Logfile -Append
-            $appPool = Get-Item "IIS:\AppPools\$app" | Out-File $Logfile -Append
-            $appPool.processModel.identityType = 3 | Out-File $Logfile -Append
-            $appPool.processModel.username = ($cred.domain+'\'+$cred.username) | Out-File $Logfile -Append
-            $appPool.processModel.password = $cred.Password | Out-File $Logfile -Append
-            $appPool.managedRuntimeVersion = "v4.0" | Out-File $Logfile -Append
-            $appPool.managedPipeLineMode = "Classic" | Out-File $Logfile -Append
-            $appPool | Set-Item | Out-File $Logfile -Append
-            Get-ChildItem IIS:\AppPools  | Out-File $Logfile -Append
+            New-WebAppPool -Name $using:app
+            $appPool = Get-Item IIS:\AppPools\$using:app
+            $appPool.processModel.identityType = 3
+            $appPool.processModel.username = $cred.username
+            $appPool.processModel.password = $cleartextpassword
+            $appPool.managedRuntimeVersion = "v4.0"
+            $appPool.managedPipeLineMode = 1
+            $appPool | Set-Item
+            Get-ChildItem IIS:\AppPools
 
+            
+            #Remove the website if it already exists       
+            if(Test-Path IIS:\sites\$using:app) {
+               Write-Output "Website exists - removing"
+              Remove-Website $using:app
+             Get-ChildItem IIS:\Sites
+            }
             #Create websites
-            New-Item iis:\Sites\$app -bindings @{protocol="http";bindingInformation="(':80:'+$app+'.'+$env+'.ert.com')"} -physicalPath C:\inetpub\wwwroot\  | Out-File $Logfile -Append
+            $binding = (':80:'+$using:app+'.'+$using:env+'.ert.com')
+            New-Item iis:\Sites\$using:app -bindings @{protocol="http";bindingInformation=$binding} -physicalPath C:\inetpub\wwwroot\
 
             }
 
-        }
         Invoke-Command –ComputerName $server –ScriptBlock $scriptBlock
-    }
+                            }
+                               }
