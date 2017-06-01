@@ -18,7 +18,10 @@ foreach ($server in $servers) {
 
     #Installs DFS and IIS Roles.
     Install-WindowsFeature -computername $server –Name FS-DFS-Replication, Web-Server, NET-Framework-Features, Web-Net-Ext, Web-Net-Ext45, Web-Asp-Net, Web-Asp-Net45 -includeManagementTools | out-file $logfile -Append
-    
+    if($?) {
+        $time = get-date
+        Write-Output "Features Installed - $time" | out-file $logfile -append
+        }
     $scriptBlock = {
         #ImportModules
         Import-Module WebAdministration
@@ -34,13 +37,18 @@ foreach ($server in $servers) {
             Write-Output "App pool exists - removing"
             Remove-WebAppPool AtlasV2
             if($?) {
-                Write-output "App Pool Removed" | out-file $logfile -Append
-                }
+        $time = get-date
+        Write-Output "AtlasV2 App Pool Removed - $time" | out-file $using:logfile -append
+        }
             Get-ChildItem IIS:\AppPools
             }
             
         #AtlasV2 - Create the app pool
         New-WebAppPool -Name AtlasV2
+        if($?) {
+        $time = get-date
+        Write-Output "Atlas V2 App Pool Created - $time" | out-file $using:logfile -append
+        }
         $appPool = Get-Item IIS:\AppPools\AtlasV2
         $appPool.processModel.identityType = 3
         $appPool.processModel.username = $cred.username
@@ -48,16 +56,28 @@ foreach ($server in $servers) {
         $appPool.managedRuntimeVersion = "v4.0"
         $appPool.managedPipeLineMode = 1
         $appPool | Set-Item
+        if($?) {
+        $time = get-date
+        Write-Output "App Pool parameters set - $time" | out-file $using:logfile -append
+        }
 
         #AtlasV2AdministrationAPI - Remove the app pool if it already exists       
         if(Test-Path IIS:\AppPools\AtlasV2AdministrationAPI) {
             Write-Output "App pool exists - removing"
             Remove-WebAppPool AtlasV2AdministrationAPI
+            if($?) {
+        $time = get-date
+        Write-Output "App pool removed - $time" | out-file $using:logfile -append
+        }
             Get-ChildItem IIS:\AppPools
             }
             
         #AtlasV2AdministrationAPI - Create the app pool
         New-WebAppPool -Name AtlasV2AdministrationAPI
+        if($?) {
+        $time = get-date
+        Write-Output "App pool created - $time" | out-file $using:logfile -append
+        }
         $appPool = Get-Item IIS:\AppPools\AtlasV2AdministrationAPI
         $appPool.processModel.identityType = 3
         $appPool.processModel.username = $cred.username
@@ -65,16 +85,28 @@ foreach ($server in $servers) {
         $appPool.managedRuntimeVersion = "v4.0"
         #$appPool.managedPipeLineMode = 1
         $appPool | Set-Item
+        if($?) {
+        $time = get-date
+        Write-Output "parameters set - $time" | out-file $using:logfile -append
+        }
            
         #AtlasV2MessagingAPI - Remove the app pool if it already exists       
         if(Test-Path IIS:\AppPools\AtlasV2MessagingAPI) {
             Write-Output "App pool exists - removing"
             Remove-WebAppPool AtlasV2MessagingAPI
+            if($?) {
+        $time = get-date
+        Write-Output "app pool removed - $time" | out-file $using:logfile -append
+        }
             Get-ChildItem IIS:\AppPools
             }
             
         #AtlasV2AdministrationAPI - Create the app pool
         New-WebAppPool -Name AtlasV2MessagingAPI
+        if($?) {
+        $time = get-date
+        Write-Output "app pool created - $time" | out-file $using:logfile -append
+        }
         $appPool = Get-Item IIS:\AppPools\AtlasV2MessagingAPI
         $appPool.processModel.identityType = 3
         $appPool.processModel.username = $cred.username
@@ -82,14 +114,22 @@ foreach ($server in $servers) {
         $appPool.managedRuntimeVersion = "v4.0"
         #$appPool.managedPipeLineMode = 1
         $appPool | Set-Item
+        if($?) {
+        $time = get-date
+        Write-Output "parameters set - $time" | out-file $using:logfile -append
+        }
 
-        Get-ChildItem IIS:\AppPools
+        Get-ChildItem IIS:\AppPools  | out-file $using:logfile -append
 
         #Websites
         #Remove the website if it already exists       
         if(Test-Path IIS:\sites\atlas.int.ert.com) {
             Write-Output "Website exists - removing"
             Remove-Website atlas.int.ert.com
+            if($?) {
+        $time = get-date
+        Write-Output "website removed - $time" | out-file $using:logfile -append
+        }
             Get-ChildItem IIS:\Sites
             }
 
@@ -100,7 +140,10 @@ foreach ($server in $servers) {
         New-Item 'IIS:\Sites\atlas.int.ert.com\V2\Administrator' -type Application -physicalpath C:\inetpub\wwwroot\Atlas\V2\Administrator -ApplicationPool "AtlasV2"
         New-Item 'IIS:\Sites\atlas.int.ert.com\V2\MessagingAPI' -type Application -physicalpath C:\inetpub\wwwroot\Atlas\V2\MessagingAPI -ApplicationPool "AtlasV2MessagingAPI"
         New-Item 'IIS:\Sites\atlas.int.ert.com\V2\Webinterface' -type Application -physicalpath C:\inetpub\wwwroot\Atlas\V2\Webinterface -ApplicationPool "AtlasV2"
-
+        if($?) {
+        $time = get-date
+        Write-Output "sites created - $time" | out-file $using:logfile -append
+        }
         }   
 
 Invoke-Command –ComputerName $server –ScriptBlock $scriptBlock
