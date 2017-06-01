@@ -9,7 +9,7 @@ $servers = ('WIN-0G4HO9015HG') #list all servers requiring install, comma-separa
 $URL = ($ApplicationName+"."+$env+"ert.com")
 
 foreach ($server in $servers) {
-    $time = get-date -format s
+    $time = get-date -format "yyyyMMdd"
     $logpath = "C:\Logs\"
     $logfile = ($logpath+$server+'_'+$time+'.txt')
     $createdirs = {
@@ -28,11 +28,12 @@ foreach ($server in $servers) {
         Import-Module WebAdministration
           
         #Get App Pool Identity User
-        $cred = Get-credential -Credential "Enter Username for $applicationname"
+        $cred = Get-credential -Credential "Enter Username for $using:applicationname"
         $cleartextpassword = $cred.getnetworkcredential().Password
 
         #AppPools
         #AtlasV2 - Remove the app pool if it already exists       
+        $time = get-date
         $AppPoolName = 'AtlasV2'
         if(Test-Path IIS:\AppPools\$AppPoolName) {
             Write-Output "$AppPoolName App Pool exists - removing - $time" | out-file $using:logfile -append
@@ -63,6 +64,7 @@ foreach ($server in $servers) {
         }
 
         #AtlasV2AdministrationAPI - Remove the app pool if it already exists       
+        $time = Get-Date
         $AppPoolName = 'AtlasV2AdministrationAPI'
         if(Test-Path IIS:\AppPools\$AppPoolName) {
             Write-Output "$AppPoolName App Pool exists - removing - $time" | out-file $using:logfile -append
@@ -93,6 +95,7 @@ foreach ($server in $servers) {
         }
            
         #AtlasV2MessagingAPI - Remove the app pool if it already exists       
+        $time = Get-Date
         $AppPoolName = 'AtlasV2MessagingAPI'
         if(Test-Path IIS:\AppPools\$AppPoolName) {
             Write-Output "$AppPoolName App Pool exists - removing - $time" | out-file $using:logfile -append
@@ -125,27 +128,34 @@ foreach ($server in $servers) {
         Get-ChildItem IIS:\AppPools  | out-file $using:logfile -append
 
         #Websites
+        #Stop Default Website
+        Stop-Website -Name "Default Web Site"
+        if($?) {
+        $time = get-date
+        Write-Output "Default Web Site stopped - $time" | out-file $using:logfile -append
+        }
         #Remove the website if it already exists       
-        if(Test-Path IIS:\sites\$url) {
-            Write-Output "$URL Website exists - removing - $time" | out-file $using:logfile -append
-            Remove-Website $url
+        $time = Get-Date
+        if(Test-Path IIS:\sites\$usingurl) {
+            Write-Output "$using:url Website exists - removing - $time" | out-file $using:logfile -append
+            Remove-Website $using:url
             if($?) {
         $time = get-date
-        Write-Output "$URL Website removed - $time" | out-file $using:logfile -append
+        Write-Output "$using:url Website removed - $time" | out-file $using:logfile -append
         }
             Get-ChildItem IIS:\Sites  | out-file $using:logfile -append
             }
 
         #Create websites
-        New-Item "iis:\Sites\$url" -bindings @{protocol="http";bindingInformation=":80:$url"} -physicalPath C:\inetpub\wwwroot\Atlas -ApplicationPool "AtlasV2"
-        New-Item "IIS:\Sites\$url\V2" -type VirtualDirectory -physicalPath C:\inetpub\wwwroot\Atlas\V2
-        New-Item "IIS:\Sites\$url\V2\AdministrationAPI" -type Application -physicalpath C:\inetpub\wwwroot\Atlas\V2\AdministrationAPI -ApplicationPool "AtlasV2AdministrationAPI"
-        New-Item "IIS:\Sites\$url\V2\Administrator" -type Application -physicalpath C:\inetpub\wwwroot\Atlas\V2\Administrator -ApplicationPool "AtlasV2"
-        New-Item "IIS:\Sites\$url\V2\MessagingAPI" -type Application -physicalpath C:\inetpub\wwwroot\Atlas\V2\MessagingAPI -ApplicationPool "AtlasV2MessagingAPI"
-        New-Item "IIS:\Sites\$url\V2\Webinterface" -type Application -physicalpath C:\inetpub\wwwroot\Atlas\V2\Webinterface -ApplicationPool "AtlasV2"
+        New-Item "iis:\Sites\$using:url" -bindings @{protocol="http";bindingInformation=":80:$using:url"} -physicalPath C:\inetpub\wwwroot\Atlas -ApplicationPool "AtlasV2"
+        New-Item "IIS:\Sites\$using:url\V2" -type VirtualDirectory -physicalPath C:\inetpub\wwwroot\Atlas\V2
+        New-Item "IIS:\Sites\$using:url\V2\AdministrationAPI" -type Application -physicalpath C:\inetpub\wwwroot\Atlas\V2\AdministrationAPI -ApplicationPool "AtlasV2AdministrationAPI"
+        New-Item "IIS:\Sites\$using:url\V2\Administrator" -type Application -physicalpath C:\inetpub\wwwroot\Atlas\V2\Administrator -ApplicationPool "AtlasV2"
+        New-Item "IIS:\Sites\$using:url\V2\MessagingAPI" -type Application -physicalpath C:\inetpub\wwwroot\Atlas\V2\MessagingAPI -ApplicationPool "AtlasV2MessagingAPI"
+        New-Item "IIS:\Sites\$using:url\V2\Webinterface" -type Application -physicalpath C:\inetpub\wwwroot\Atlas\V2\Webinterface -ApplicationPool "AtlasV2"
         if($?) {
         $time = get-date
-        Write-Output "$url Websites created - $time" | out-file $using:logfile -append
+        Write-Output "$using:url Websites created - $time" | out-file $using:logfile -append
         }
         }   
 
