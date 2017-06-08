@@ -1,8 +1,7 @@
-Import-Module WebAdministration
-
 $Server = $args[0]
 
 $Scriptblock = {
+    Import-Module WebAdministration
     $AppPools = gci -Path IIS:\AppPools
     $Sites = gci -Path IIS:\Sites | Where-Object {$_.Name -notmatch "Default Web Site"}
     foreach ($AppPool IN $AppPools) {
