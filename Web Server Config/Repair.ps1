@@ -12,4 +12,4 @@ foreach ($Site IN $Sites) {
 }
 
 $StoppedSites = GCI -Path IIS:\Sites | Where-Object {$_.Name -notmatch "Default Web Site" -and $_.State -match "Stopped"}
-if ($StoppedSites) {Write-host "Still some stopped stuff"}
+if ($StoppedSites) {iisreset /rebootonerror}
