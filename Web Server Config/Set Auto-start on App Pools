@@ -1,0 +1,26 @@
+$Servers = Get-Content C:\Users\Desktop\server.txt
+
+$Servers | ForEach-Object {
+            Invoke-Command -ComputerName $_ -ScriptBlock {
+            Import-Module WebAdministration
+            cd IIS:/Sites
+            $Application = dir
+foreach ($item in $Application)
+{
+    $ApplicationName = $item.Name
+    $Website = Get-Item $ApplicationName
+    $Website.serverAutoStart = 'true'
+    $Website | Set-Item
+}
+            cd IIS:/AppPools
+            $ApplicationPools = dir
+foreach ($item in $ApplicationPools)
+{
+    $ApplicationPoolName = $item.Name
+    $AppPool = Get-Item $ApplicationPoolName
+    $AppPool.autoStart = 'true'
+    $AppPool.startmode = 'alwaysrunning'
+    $AppPool | Set-Item
+}
+}
+}
