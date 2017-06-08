@@ -2,13 +2,13 @@ Import-Module WebAdministration
 
 $AppPools = gci -Path IIS:\AppPools
 $Sites = gci -Path IIS:\Sites | Where-Object {$_.Name -notmatch "Default Web Site"}
-foreach ($AppPools) {
-    Start-WebAppPool $_.Name;
+foreach ($AppPool IN $AppPools) {
+    Start-WebAppPool $AppPool.name
 }
 
 
-foreach ($Sites) {
-    Start-WebSite $_.Name; 
+foreach ($Site IN $Sites) {
+    Start-WebSite $Site.name 
 }
 
 $StoppedSites = GCI -Path IIS:\Sites | Where-Object {$_.Name -notmatch "Default Web Site" -and $_.State -match "Stopped"}
